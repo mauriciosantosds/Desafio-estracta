@@ -12,15 +12,17 @@ composer install
 
 O `composer.json` fixa `config.platform.php` em 8.1, então o `composer.lock` resolve dependências compatíveis com PHP 8.1 mesmo quando gerado numa versão mais nova.
 
-Sem PHP instalado, dá para usar Docker:
+Sem PHP instalado, dá para usar Docker Compose. A imagem (ver [Dockerfile](Dockerfile)) é a `php:8.1-cli`, versão mínima do projeto, com Composer 2 e `unzip`:
 
 ```bash
-docker run --rm -u "$(id -u):$(id -g)" -e COMPOSER_HOME=/tmp/c -v "$PWD:/app" -w /app composer:2 composer install
-docker run --rm -u "$(id -u):$(id -g)" -v "$PWD:/app" -w /app php:8.1-cli vendor/bin/pest --exclude-group=integration
-docker run --rm -u "$(id -u):$(id -g)" -v "$PWD:/app" -w /app php:8.1-cli php bin/consultar.php 00.000.000/0000-00
+docker compose build
+docker compose run --rm app composer install
+docker compose run --rm app composer test
+docker compose run --rm app php bin/consultar.php 00.000.000/0000-00
+SEFAZ_BA_CNPJ=<cnpj> docker compose run --rm app composer test:integration
 ```
 
-A instalação usa a imagem `composer:2` porque a `php:8.1-cli` não traz `zip`/`unzip`. Os testes rodam na `php:8.1-cli`: na `composer:2` (PHP 8.5) eles passam, mas o Pest 2 emite avisos de depreciação do próprio código dele (`setAccessible()`).
+O container roda com o UID/GID do host (padrão `1000:1000`), para que `vendor/` não fique com dono root. Se os seus forem diferentes, exporte antes: `export UID GID=$(id -g)`.
 
 ## Testes
 
