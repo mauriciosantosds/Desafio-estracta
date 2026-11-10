@@ -1,0 +1,13 @@
+services:
+  app:
+    build: .
+    image: desafio-estracta:php8.1
+    # Usa o UID/GID do host para que vendor/ e caches não fiquem como root.
+    # Exporte antes, se o seu não for 1000: export UID GID=$(id -g)
+    user: "${UID:-1000}:${GID:-1000}"
+    volumes:
+      - .:/app
+    working_dir: /app
+    environment:
+      # Opcional: CNPJ usado pelo teste de integração de cadastro existente.
+      SEFAZ_BA_CNPJ: ${SEFAZ_BA_CNPJ:-}
