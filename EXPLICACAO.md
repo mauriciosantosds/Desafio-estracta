@@ -4,7 +4,7 @@
 
 Comecei pelo portal: antes de escrever qualquer classe, quis entender exatamente o que o formulário envia e o que volta em cada cenário. Com isso em mãos, dividi o trabalho em camadas pequenas que dava para testar isoladamente (transporte, extração, mapeamento e o spider amarrando tudo) e fui entregando uma branch por etapa.
 
-PHP não estava instalado na minha máquina, então rodei tudo com Docker (`composer:2` para instalar dependências e `php:8.1-cli` para os testes e o comando). Testar em 8.1 foi de propósito, porque é a versão mínima do enunciado.
+PHP não estava instalado na minha máquina, então rodei tudo com Docker. No começo usei duas imagens avulsas: composer:2 para instalar as dependências e php:8.1-cli para os testes e o comando. Testar em 8.1 foi de propósito, porque é a versão mínima do enunciado. No fim juntei isso num Dockerfile com um compose.yaml, para que qualquer pessoa consiga instalar, testar e consultar com docker compose run --rm app ..., sem PHP instalado e sem decorar os comandos.
 
 ## Investigando o portal
 
@@ -48,6 +48,7 @@ Usei `curl` no terminal, guardando headers e corpo de cada resposta:
 - Para as fixtures, não quis usar páginas reais nem anonimizar uma página inteira. Escrevi HTMLs sintéticos que reproduzem a estrutura que importa (rótulos, `&nbsp;`, comentários, seções repetidas, uma página gravada em ISO-8859-1) com dados inventados. Validei o parser contra as páginas reais só localmente, sem versioná-las.
 - O `composer audit` acusa um alerta no PHPUnit 10.5.36. O Pest 2.36 fixa exatamente essa versão, então não dá para atualizar sem trocar de major do Pest. Como é dependência de desenvolvimento e o problema é na cobertura de testes PHPT, que não uso, deixei registrado no README.
 - A imagem `composer:2` vem com PHP 8.5. Para o `composer.lock` não puxar pacotes que exigem PHP mais novo que o mínimo, fixei `config.platform.php` em 8.1.
+- Usar duas imagens tinha atrito: a php:8.1-cli não traz zip nem unzip, então o Composer não conseguia extrair os pacotes nela. E na composer:2, que roda PHP 8.5, os testes passavam, mas o Pest 2 enchia a saída de avisos de depreciação do próprio código dele. O Dockerfile resolve as duas coisas: parte da php:8.1-cli, instala o unzip e copia só o executável do Composer da imagem oficial (COPY --from=composer:2). O container roda com o UID/GID do host para o vendor/ não ficar com dono root.
 
 ## O que aprendi
 
