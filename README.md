@@ -20,6 +20,8 @@ docker run --rm -u "$(id -u):$(id -g)" -v "$PWD:/app" -w /app php:8.1-cli vendor
 docker run --rm -u "$(id -u):$(id -g)" -v "$PWD:/app" -w /app php:8.1-cli php bin/consultar.php 00.000.000/0000-00
 ```
 
+A instalação usa a imagem `composer:2` porque a `php:8.1-cli` não traz `zip`/`unzip`. Os testes rodam na `php:8.1-cli`: na `composer:2` (PHP 8.5) eles passam, mas o Pest 2 emite avisos de depreciação do próprio código dele (`setAccessible()`).
+
 ## Testes
 
 ```bash
